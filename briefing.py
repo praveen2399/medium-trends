@@ -1,6 +1,54 @@
 import os
-import anthropic
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 
+import anthropic
+import feedparser
+
+# ---------- Step 1: collect and rank posts ----------
+TAGS = [
+    "artificial-intelligence", "software-architecture", "fintech",
+    "llm", "banking", "ai-agents",
+]
+FINANCE_WORDS = ["bank", "fintech", "payment", "finance"]
+
+posts = {}
+for tag in TAGS:
+    feed = feedparser.parse(f"https://medium.com/feed/tag/{tag}")
+    for entry in feed.entries:
+        link = entry.link.split("?")[0]
+        if link in posts:
+            posts[link]["tag_hits"] += 1
+            continue
+        text = (entry.title + " " + entry.get("summary", "")).lower()
+        try:
+            published = parsedate_to_datetime(entry.published).timestamp()
+        except Exception:
+            published = 0
+        posts[link] = {
+            "title": entry.title,
+            "link": link,
+            "published": published,
+            "snippet": entry.get("summary", "")[:500],
+            "tag_hits": 1,
+            "agents_in_finance": "agent" in text
+                and any(w in text for w in FINANCE_WORDS),
+        }
+
+print(f"Collected {len(posts)} posts")
+if not posts:
+    raise SystemExit("No posts found - Medium feeds may be blocking requests.")
+
+top5 = sorted(
+    posts.values(),
+    key=lambda p: (p["agents_in_finance"], p["tag_hits"], p["published"]),
+    reverse=True,
+)[:5]
+
+for i, p in enumerate(top5, 1):
+    print(f"{i}. {p['title']}\n   {p['link']}")
+
+# ---------- Step 2: write the spoken briefing ----------
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 articles = "\n\n".join(
@@ -27,4 +75,10 @@ response = client.messages.create(
 script = response.content[0].text
 with open("briefing.txt", "w") as f:
     f.write(script)
+
+with open("links.txt", "w") as f:
+    for i, p in enumerate(top5, 1):
+        f.write(f"{i}. {p['title']}\n{p['link']}\n\n")
+
+print("\n--- BRIEFING ---\n")
 print(script)
