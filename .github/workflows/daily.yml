@@ -44,6 +44,8 @@ jobs:
 
       - name: Build page
         run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
           python make_page.py
           ffmpeg -y -i briefing.wav -b:a 64k site/briefing.mp3
 
