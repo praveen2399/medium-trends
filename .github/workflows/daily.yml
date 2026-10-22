@@ -1,0 +1,37 @@
+name: Daily Medium Briefing
+
+on:
+  schedule:
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install packages
+        run: pip install feedparser anthropic piper-tts
+
+      - name: Build briefing script
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python briefing.py
+
+      - name: Convert to audio
+        run: |
+          python -m piper.download_voices en_US-lessac-medium
+          python -m piper -m en_US-lessac-medium -f briefing.wav < briefing.txt
+
+      - name: Save audio
+        uses: actions/upload-artifact@v4
+        with:
+          name: briefing-${{ github.run_id }}
+          path: |
+            briefing.wav
+            briefing.txt
