@@ -40,7 +40,9 @@ jobs:
           path: |
             briefing.wav
             briefing.txt
-            - name: Build page
+            links.txt
+
+      - name: Build page
         run: |
           python make_page.py
           ffmpeg -y -i briefing.wav -b:a 64k site/briefing.mp3
