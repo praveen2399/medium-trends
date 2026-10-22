@@ -8,6 +8,11 @@ on:
 jobs:
   briefing:
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
     steps:
       - uses: actions/checkout@v4
 
@@ -35,3 +40,13 @@ jobs:
           path: |
             briefing.wav
             briefing.txt
+            - name: Build page
+        run: |
+          python make_page.py
+          ffmpeg -y -i briefing.wav -b:a 64k site/briefing.mp3
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - uses: actions/deploy-pages@v4
