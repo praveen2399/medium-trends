@@ -132,19 +132,23 @@ for tag, posts in top.items():
     for i, p in enumerate(posts, 1):
         articles += f"{i}. {p['title']}\nSnippet: {p['snippet']}\n"
 
-prompt = f"""You are a friendly tech news anchor. Write a spoken daily briefing of
-about 8 to 10 minutes, covering the Medium posts below, grouped by category.
-Open with a one-line greeting. Introduce each category with a short spoken
-transition, then cover each story in one or two sentences, saying why it matters for
-a senior engineering leader in banking. Close each category with a one-line takeaway.
-End with the big trend across all categories and recommend two or three posts worth
-reading in full.
-Plain spoken text only: no headings, no bullet points, no markdown, no URLs.
+prompt = f"""Write a podcast script, about 8 to 10 minutes long, for a daily show called
+"Trends Tonic" with two hosts: ALEX (the lead, explains the stories) and SAM (curious
+co-host who asks questions, adds context and pushes back). Cover the Medium posts below,
+grouped by category, for a senior engineering leader in banking.
+Open with a short, warm greeting and the show name. Move between categories with a natural
+transition. For each story, have the hosts discuss it in a few quick exchanges, covering
+why it matters for banking. Close each category with a one-line takeaway. Near the end,
+discuss the big trend across all categories and recommend two or three posts worth reading
+in full, then sign off together.
+Format: every line must start with "ALEX:" or "SAM:" followed by what that host says.
+Keep turns short and conversational. Spoken text only: no stage directions, headings,
+bullet points, markdown or URLs.
 {articles}"""
 
 response = client.messages.create(
     model=MODEL,
-    max_tokens=3000,
+    max_tokens=6000,
     messages=[{"role": "user", "content": prompt}],
 )
 

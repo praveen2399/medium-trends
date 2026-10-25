@@ -30,8 +30,9 @@ jobs:
 
       - name: Convert to audio
         run: |
-          python -m piper.download_voices en_US-lessac-medium
-          python -m piper -m en_US-lessac-medium -f briefing.wav < briefing.txt
+          run: python make_audio.py
+          #python -m piper.download_voices en_US-lessac-medium
+          #python -m piper -m en_US-lessac-medium -f briefing.wav < briefing.txt
 
       - name: Save audio
         uses: actions/upload-artifact@v4
