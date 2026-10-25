@@ -30,7 +30,7 @@ jobs:
 
       - name: Convert to audio
         run: |
-          run: python make_audio.py
+          python make_audio.py
           #python -m piper.download_voices en_US-lessac-medium
           #python -m piper -m en_US-lessac-medium -f briefing.wav < briefing.txt
 
