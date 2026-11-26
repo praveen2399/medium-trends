@@ -55,3 +55,21 @@ jobs:
           path: site
 
       - uses: actions/deploy-pages@v4
+        id: deploy
+        continue-on-error: true
+
+      - name: Wait before retrying deployment
+        if: steps.deploy.outcome == 'failure'
+        run: sleep 10
+
+      - uses: actions/deploy-pages@v4
+        id: deploy_retry
+        if: steps.deploy.outcome == 'failure'
+        continue-on-error: true
+
+      - name: Wait before final deployment attempt
+        if: steps.deploy_retry.outcome == 'failure'
+        run: sleep 20
+
+      - uses: actions/deploy-pages@v4
+        if: steps.deploy_retry.outcome == 'failure'
